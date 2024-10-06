@@ -9,8 +9,8 @@
 #include <linux/uaccess.h>
 
 #define DEVICE_NAME "pci_example_driver"
-#define PCI_VENDOR_ID_EXAMPLE 0x1234    // Reemplazar con el vendor ID de tu dispositivo
-#define PCI_DEVICE_ID_EXAMPLE 0x5678    // Reemplazar con el device ID de tu dispositivo
+#define PCI_VENDOR_ID_EXAMPLE 0x104C
+#define PCI_DEVICE_ID_EXAMPLE 0x0DDE
 
 // Estructura para el dispositivo PCI
 struct pci_example_dev {
