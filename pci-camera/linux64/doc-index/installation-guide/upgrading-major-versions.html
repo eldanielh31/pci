@@ -1,0 +1,48 @@
+<!doctype html>
+<head>
+<meta charset="utf-8">
+<title>4 Upgrading Major Versions</title>
+<link rel="stylesheet" href="simics.css">
+<script>function postUrl() {
+    window.parent.postMessage({ content_url: window.location.href }, "*");
+}
+if (window.parent != null && window.parent != window) {
+    postUrl();
+    window.addEventListener("hashchange", function () {
+        postUrl();
+    });
+} else {
+    // Check if we are part of a Simics doc site and redirect if we are
+    fetch("../simics-doc-site-marker", { method: "HEAD" }).then(response => {
+        if (response.ok) {
+            window.location = "..#" + window.location.href;
+        } else {
+            console.info("Not part of a Simics documentation site");
+        }
+    }).catch(error => {
+        console.warn("Failed to check if this is a Simics documentation site:",
+            error);
+    });
+}</script>
+</head>
+<div class="chain">
+<a href="installation.html">3 Installing Packages</a>
+<a href="advanced-installation.html">5 Advanced Installation Options</a>
+</div>
+<div class="path">
+<a href="index.html">Installation Guide</a>
+&nbsp;/&nbsp;</div>
+<h1 id="upgrading-major-versions">4 <a href="#upgrading-major-versions">Upgrading Major Versions</a></h1>
+<h2 id="upgrading-from-version-4-8-and-5">4.1 <a href="#upgrading-from-version-4-8-and-5">Upgrading from Version 4.8 and 5</a></h2>
+<p>Intel® Simics® Simulator 6 is not directly compatible with neither version 4.8 nor 5. However, the simulator supports the same structure of installation and multi-user configuration, so upgrading should be simple.</p>
+<p>For version 4.8, select the 4.8 API to get access to deprecated parts of the API. This is described in the <a href="../simics-migration-guide/index.html"><em>Simics Migration Guide</em></a>.</p>
+<p>For both version 4.8 and 5, some Python source code may have to be updated before recompiling.</p>
+<h2 id="upgrading-minor-6-releases">4.2 <a href="#upgrading-minor-6-releases">Upgrading Minor 6 Releases</a></h2>
+<p>Version 6 releases are binary compatible, so nothing special needs to be done when upgrading.
+Unless specifically mentioned in the <a href="../RELEASENOTES/index.html"><em>Release Notes</em></a>, add-on packages should work with any installation of Simics Base, version 6.
+A more detailed description of compatibility issues for user-created modules is available in the <a href="../simics-migration-guide/index.html"><em>Simics Migration Guide</em></a>.</p>
+
+<div class="chain">
+<a href="installation.html">3 Installing Packages</a>
+<a href="advanced-installation.html">5 Advanced Installation Options</a>
+</div>

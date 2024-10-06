@@ -1,0 +1,654 @@
+<!doctype html>
+<head>
+<meta charset="utf-8">
+<title>37 Transactions</title>
+<link rel="stylesheet" href="simics.css">
+<script>function postUrl() {
+    window.parent.postMessage({ content_url: window.location.href }, "*");
+}
+if (window.parent != null && window.parent != window) {
+    postUrl();
+    window.addEventListener("hashchange", function () {
+        postUrl();
+    });
+} else {
+    // Check if we are part of a Simics doc site and redirect if we are
+    fetch("../simics-doc-site-marker", { method: "HEAD" }).then(response => {
+        if (response.ok) {
+            window.location = "..#" + window.location.href;
+        } else {
+            console.info("Not part of a Simics documentation site");
+        }
+    }).catch(error => {
+        console.warn("Failed to check if this is a Simics documentation site:",
+            error);
+    });
+}</script>
+</head>
+<div class="chain">
+<a href="extension-classes.html">36 Extension Classes</a>
+<a href="checkpoint-compatibility.html">38 Checkpoint Compatibility</a>
+</div>
+<div class="path">
+<a href="index.html">Model Builder User's Guide</a>
+&nbsp;/&nbsp;
+<a href="part-simics-programming.html">VI Simics API</a>
+&nbsp;/&nbsp;</div>
+<h1 id="transactions">37 <a href="#transactions">Transactions</a></h1>
+<p>Simics 6 introduces a new API for memory transactions, based on the <code>transaction_t</code> data type. The new transaction is more flexible and supports more features than the old <code>generic_transaction_t</code>, but both types of transactions can be used concurrently in a configuration to make it easier to migrate to the new transaction.</p>
+<h2 id="transaction-atoms">37.1 <a href="#transaction-atoms">Transaction Atoms</a></h2>
+<p>A transaction is basically a list with properties, where each property is called an "atom". Below is a list with the most commonly used transaction atoms with a brief description. More information about different atoms is provided in subsequent sections.</p>
+<table><thead><tr><th>Atom name</th><th>Atom type</th><th>Description</th></tr></thead><tbody>
+<tr><td>flags</td><td><code>transaction_flags_t</code></td><td>see description below</td></tr>
+<tr><td>data</td><td><code>uint8 *</code></td><td>see description below</td></tr>
+<tr><td>size</td><td><code>uint32</code></td><td>transaction size</td></tr>
+<tr><td>initiator</td><td><code>conf_object_t *</code></td><td>initiator object</td></tr>
+<tr><td>owner</td><td><code>conf_object_t *</code></td><td>object passed to completion function</td></tr>
+<tr><td>completion</td><td><code>transaction_completion_t</code></td><td>completion function</td></tr>
+<tr><td>fill_value</td><td><code>uint8</code></td><td>value for each byte in the transaction</td></tr>
+<tr><td>user_data</td><td><code>lang_void *</code></td><td>obsolete atom</td></tr>
+<tr><td>memop</td><td><code>generic_transaction_t *</code></td><td>pointer to obsolete <code>generic_transaction_t</code></td></tr>
+</tbody></table>
+<p>The <code>flags</code> atom defines whether the transaction is a read, write or fetch and whether it is an inquiry transaction. It is a combination (bitmap) of the following flags:</p>
+<table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>Sim_Transaction_Fetch</code></td><td>instruction fetch</td></tr>
+<tr><td><code>Sim_Transaction_Write</code></td><td>write operation</td></tr>
+<tr><td><code>Sim_Transaction_Inquiry</code></td><td>inquiry operation</td></tr>
+<tr><td><code>Sim_Transaction_Control</code></td><td>control operation (e.g. cache line fetch)</td></tr>
+</tbody></table>
+<p>When neither <code>Sim_Transaction_Fetch</code> nor <code>Sim_Transaction_Write</code> is set the transaction is a read transaction.</p>
+<p>The <code>data</code> atom holds a pointer either to data that should be written (for write transactions) or to a location where data should be read to (for read transactions). Please note that endpoints servicing transactions should not use the <code>data</code> atom directly but instead use data access functions:</p>
+<ul>
+<li>
+<p><code>SIM_get_transaction_bytes</code>, <code>SIM_get_transaction_bytes_offs</code>, <code>SIM_get_transaction_value_be</code>, <code>SIM_get_transaction_value_le</code> are available to get the data from a transaction (when servicing write transactions);</p>
+</li>
+<li>
+<p><code>SIM_set_transaction_bytes</code>, <code>SIM_set_transaction_bytes_offs</code>, <code>SIM_set_transaction_value_be</code>, <code>SIM_set_transaction_value_le</code>, <code>SIM_set_transaction_bytes_constant</code> are available in order to write data to a transaction (when servicing read transactions).</p>
+</li>
+</ul>
+<div class="note">
+<p>Additional transaction flags may be defined in the future.</p>
+</div>
+<h2 id="transaction-datatype">37.2 <a href="#transaction-datatype">Transaction Datatype</a></h2>
+<p>The <code>transaction_t</code> type itself is defined as follows:</p>
+<pre><code>    typedef struct transaction {
+        atom_t *atoms;
+        struct transaction *prev;
+
+        ...internal fields...
+    } transaction_t;
+</code></pre>
+<p>The only fields that may be used are the <code>atoms</code> field and the <code>prev</code> field. There are also some internal fields that must be initialized to zero, but they should never be referred to by name. The <code>prev</code> field is either <code>NULL</code> or points to a <em>parent</em> transaction. That is, transactions form a linked list, and this mechanism is utilized to append additional atoms to an existing transaction. This is discussed in more details in subsequent sections.</p>
+<div class="note">
+<p>Transaction atoms should be accessed by using the available accessors and not by accessing the <code>atoms</code> pointer directly.</p>
+</div>
+<h2 id="transaction-api-overview">37.3 <a href="#transaction-api-overview">Transaction API Overview</a></h2>
+<p>Various API functions exist to retrieve information about a transaction:</p>
+<div class="dl">
+<ul>
+<li><span class="term" id="dt:accessors">Accessors</span></li>
+</ul>
+<table><thead><tr><th>API Function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>SIM_transaction_is_read</code></td><td>returns <code>true</code> for loads</td></tr>
+<tr><td><code>SIM_transaction_is_write</code></td><td>returns <code>true</code> for stores</td></tr>
+<tr><td><code>SIM_transaction_is_fetch</code></td><td>returns <code>true</code> for instruction fetches</td></tr>
+<tr><td><code>SIM_transaction_is_inquiry</code></td><td>returns <code>true</code> for inquiry transactions</td></tr>
+<tr><td><code>SIM_transaction_flags</code></td><td>returns the value of the <code>flags</code> atom</td></tr>
+<tr><td><code>SIM_transaction_size</code></td><td>returns the transaction size</td></tr>
+<tr><td><code>SIM_transaction_initiator</code></td><td>returns the transaction initiator</td></tr>
+</tbody></table>
+<p>|</p>
+<ul>
+<li><span class="term" id="dt:atoms">Atoms</span></li>
+</ul>
+<table><thead><tr><th>API Function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ATOM_&lt;type&gt;</code></td><td>atom constructor</td></tr>
+<tr><td><code>ATOM_get_transaction_&lt;type&gt;</code></td><td>retrieves atom of type &lt;type&gt; (returns <code>0</code>/<code>NULL</code> if the atom is absent)</td></tr>
+<tr><td><code>ATOM_transaction_&lt;type&gt;</code></td><td>retrieves pointer to atom of type &lt;type&gt; (returns <code>NULL</code> if the atom is absent)</td></tr>
+<tr><td><code>SIM_register_python_atom_type</code></td><td>registers custom Python atom type</td></tr>
+</tbody></table>
+<p>|</p>
+<ul>
+<li><span class="term" id="dt:data-access">Data Access</span></li>
+</ul>
+<table><thead><tr><th>API Function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>SIM_set_transaction_bytes</code></td><td>set buffer contents</td></tr>
+<tr><td><code>SIM_set_transaction_bytes_offs</code></td><td>set some buffer bytes</td></tr>
+<tr><td><code>SIM_set_transaction_value_le</code></td><td>encode value using little endian byte order</td></tr>
+<tr><td><code>SIM_set_transaction_value_be</code></td><td>encode value using big endian byte order</td></tr>
+<tr><td><code>SIM_set_transaction_bytes_constant</code></td><td>set all transaction bytes to a given value</td></tr>
+<tr><td><code>SIM_get_transaction_bytes</code></td><td>retrieve buffer contents</td></tr>
+<tr><td><code>SIM_get_transaction_bytes_offs</code></td><td>retrieve some buffer bytes</td></tr>
+<tr><td><code>SIM_get_transaction_value_le</code></td><td>interpret buffer as a little endian encoded integer</td></tr>
+<tr><td><code>SIM_get_transaction_value_be</code></td><td>interpret buffer as a big endian encoded integer</td></tr>
+</tbody></table>
+<p>|</p>
+<ul>
+<li><span class="term" id="dt:asynchronous-completion">Asynchronous Completion</span></li>
+</ul>
+<table><thead><tr><th>API function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>SIM_defer_transaction</code></td><td>defer transaction for later completion</td></tr>
+<tr><td><code>SIM_defer_owned_transaction</code></td><td>defer transaction for later completion using a supplied transaction</td></tr>
+<tr><td><code>SIM_complete_transaction</code></td><td>complete a deferred transaction</td></tr>
+<tr><td><code>SIM_monitor_transaction</code></td><td>monitor transaction for asynchronous completion</td></tr>
+<tr><td><code>SIM_monitor_chained_transaction</code></td><td>monitor chained transaction for asynchronous completion</td></tr>
+<tr><td><code>SIM_transaction_wait</code></td><td>wait for transaction completion</td></tr>
+</tbody></table>
+<p>|</p>
+<ul>
+<li><span class="term" id="dt:checkpointing">Checkpointing</span></li>
+</ul>
+<table><thead><tr><th>API function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>SIM_get_transaction_id</code></td><td>retrieve transaction ID for checkpointing</td></tr>
+<tr><td><code>SIM_reconnect_transaction</code></td><td>relink transaction at checkpoint restore</td></tr>
+</tbody></table>
+<p>|</p>
+<ul>
+<li><span class="term" id="dt:transaction-issue">Transaction Issue</span></li>
+</ul>
+<table><thead><tr><th>API function</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>SIM_issue_transaction</code></td><td>primary function to issue transactions to <code>map_target_t</code> endpoint</td></tr>
+<tr><td><code>SIM_issue_read_transaction</code></td><td>C helper function to issue read transactions</td></tr>
+<tr><td><code>SIM_issue_write_transaction</code></td><td>C helper function to issue write transactions</td></tr>
+</tbody></table>
+<p>|</p>
+</div>
+<h2 id="transaction-interface">37.4 <a href="#transaction-interface">Transaction Interface</a></h2>
+<p>Devices mapped into a memory space implement the <code>transaction</code> interface in order to receive transactions. The <code>transaction</code> interface looks as follows:</p>
+<pre><code>typedef struct transaction_interface {
+    exception_type_t (*issue)(conf_object_t *NOTNULL obj,
+                              transaction_t *NOTNULL t,
+                              uint64 addr);
+} transaction_interface_t;
+</code></pre>
+<p>The <code>issue</code> method is called when a transaction <code>t</code> is issued to the device. The <code>addr</code> parameter is an offset into the mapped device. If the transaction is handled successfully then <code>Sim_PE_No_Exception</code> should be returned. Below is a list with common return codes:</p>
+<table><thead><tr><th>Return Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>Sim_PE_No_Exception</code></td><td>success</td></tr>
+<tr><td><code>Sim_PE_IO_Not_Taken</code></td><td>access where nothing is mapped</td></tr>
+<tr><td><code>Sim_PE_IO_Error</code></td><td>target abort, mostly applicable to PCI devices</td></tr>
+<tr><td><code>Sim_PE_Inquiry_Unhandled</code></td><td>inquiry access not supported</td></tr>
+<tr><td><code>Sim_PE_Stall_CPU</code></td><td>abort current instruction and reissue it</td></tr>
+<tr><td><code>Sim_PE_Deferred</code></td><td>transaction will be completed asynchronously</td></tr>
+<tr><td><code>Sim_PE_Async_Required</code></td><td>synchronous operation is not supported</td></tr>
+</tbody></table>
+<p>The following sections discuss how the interface is used for synchronous and asynchronous transactions.</p>
+<div class="note">
+<p>When a device is accessed through a memory space, then <code>addr</code> is given by the expression (<code>memory_space_addr</code> - <code>map.base</code>) + <code>map.start</code>, where <code>memory_space_addr</code> is the address at which the memory space was accessed.</p>
+</div>
+<h2 id="synchronous-completion">37.5 <a href="#synchronous-completion">Synchronous Completion</a></h2>
+<p>Completing a transaction synchronously is simple. The <code>issue</code> method of the <code>transaction</code> interface just performs the requested operation and returns <code>Sim_PE_No_Exception</code>, or alternatively, returns some appropriate error code. A simple example in C is given below:
+</p><pre><code>static exception_type_t
+issue_method(conf_object_t *obj, transaction_t *t, uint64 addr)
+{
+    my_device_t *dev = (my_device_t *)obj;
+    unsigned size = SIM_transaction_size(t);
+
+    if (addr == REG_A_OFFSET &amp;&amp; size == 4) {
+        if (SIM_transaction_is_read(t))
+            SIM_set_transaction_value_le(t, dev-&gt;reg_a);
+        else
+            dev-&gt;reg_a = SIM_get_transaction_value_le(t);
+        return Sim_PE_No_Exception;
+    } else {
+        // One can handle more cases. We just return an exception.
+        return Sim_PE_IO_Not_Taken;
+    }
+}
+</code></pre>
+<p></p>
+<div class="note">
+<p>For synchronous operation, the <code>transaction</code> interface is quite similar to the old <code>io_memory</code> interface.</p>
+</div>
+<h2 id="asynchronous-completion">37.6 <a href="#asynchronous-completion">Asynchronous Completion</a></h2>
+<p>Transactions can be completed asynchronously, provided that the initiator supports it. The following example shows how this is done:
+</p><pre><code>static exception_type_t
+issue_method_that_defers_transaction(
+    conf_object_t *obj, transaction_t *t, uint64 addr)
+{
+    my_device_t *dev = (my_device_t *)obj;
+
+    transaction_t *t_def = SIM_defer_transaction(obj, t);
+    if (!t_def)
+        return Sim_PE_Async_Required;
+
+    dev-&gt;t_def = t_def;
+    return Sim_PE_Deferred;
+}
+</code></pre>
+
+The main points to note are that <code>SIM_defer_transaction</code> is used to obtain a new transaction pointer, <code>t_def</code>, which remains valid after the return from the <code>issue</code> function, and that the return value must be <code>Sim_PE_Deferred</code> to signify asynchronous completion. Calling <code>SIM_defer_transaction</code> also makes Simics aware of the uncompleted transaction. Uncompleted, deferred, transactions can be listed with the <code>list-transactions</code> command.<p></p>
+<p>If the originator of the issued transaction does not support asynchronous completion (see <a class="reference" href="#issuing-an-asynchronous-transaction">37.9</a>), then <code>SIM_defer_transaction</code> will return <code>NULL</code>. In this case, the device should handle the transaction synchronously or return <code>Sim_PE_Async_Required</code> if this is not feasible.</p>
+<p>The deferred transaction carries the same information as the original transaction. Once the device is ready with the requested operation, the deferred transaction is completed by calling <code>SIM_complete_transaction</code>. This is illustrated in the following example, which completes a deferred read transaction.
+</p><pre><code>    // first we write the data to the transaction
+    SIM_set_transaction_value_le(dev-&gt;t_def, reg_value);
+
+    // then report that the transaction was completed
+    SIM_complete_transaction(dev-&gt;t_def, Sim_PE_No_Exception);
+
+    dev-&gt;t_def = NULL;  // nullify t_def to avoid a dangling pointer
+</code></pre>
+
+The call to <code>SIM_complete_transaction</code> releases the deferred transaction, and it must not be accessed after this call.<p></p>
+<p>As a special case, completing a deferred transaction from within the <code>issue</code> method itself is allowed. In this case, the return value from <code>issue</code> should still be <code>Sim_PE_Deferred</code>.</p>
+<div class="note">
+<p>The transaction pointer passed as an argument to <code>issue</code> must never be kept around after the interface method has returned. Instead, <code>SIM_defer_transaction</code> should be used to obtain a pointer which remains valid until the transaction has been completed.</p>
+</div>
+<h2 id="creating-transactions">37.7 <a href="#creating-transactions">Creating Transactions</a></h2>
+<p>Below is an example how a 8-byte write transaction can be constructed in C:
+</p><pre><code>uint8 buf[8] = { 0 };  // USER-TODO: fill buf with the actual data to write
+atom_t atoms[] = {
+    ATOM_flags(Sim_Transaction_Write),
+    ATOM_data(buf),
+    ATOM_size(sizeof buf),
+    ATOM_LIST_END
+};
+transaction_t t = { atoms };
+</code></pre>
+<p></p>
+<div class="note">
+<p>The atom list must always be terminated by the <code>ATOM_LIST_END</code> marker.</p>
+</div>
+<p>The same example in Python is even simpler:</p>
+<p>
+</p><pre><code>from simics import transaction_t
+
+t = transaction_t(write=True, size=8, value_le=0x11223344)
+</code></pre>
+<p></p>
+<h2 id="issuing-a-synchronous-transaction">37.8 <a href="#issuing-a-synchronous-transaction">Issuing a Synchronous Transaction</a></h2>
+<p>Issuing a transaction synchronously is done by just calling the <code>issue</code> method of the <code>transaction</code> interface or using <code>SIM_issue_transaction</code> with a <code>map_tgt</code> handle representing the destination.
+</p><pre><code>static uint8
+issue_synchronous_1_byte_read(my_device_t *dev, uint64 addr)
+{
+    // create a 1-byte read transaction
+    uint8 val = -1;
+    atom_t atoms[] = {
+        ATOM_flags(0),  // zero flags value denotes a read transaction
+        ATOM_data(&amp;val),
+        ATOM_size(sizeof val),
+        ATOM_initiator(&amp;dev-&gt;obj),
+        ATOM_LIST_END
+    };
+    transaction_t t = { atoms };
+
+    // issue the transaction @ addr
+    exception_type_t ex = trans_iface-&gt;issue(dst_obj, &amp;t, addr);
+    if (ex != Sim_PE_No_Exception) {
+        // USER-TODO: handle error condition
+    }
+
+    return val;
+}
+</code></pre>
+<p></p>
+<h2 id="issuing-an-asynchronous-transaction">37.9 <a href="#issuing-an-asynchronous-transaction">Issuing an Asynchronous Transaction</a></h2>
+<p>The following example issues a 4-byte read asynchronously. The transaction and atoms are allocated on the heap to ensure that the transaction remains valid until completion. The presence of the completion atom with a non-<code>NULL</code> value signifies that the transaction can be completed asynchronously.
+</p><pre><code>typedef struct {
+    transaction_t t;
+    atom_t atoms[6];
+    uint8 buf[4];
+} my_trans_t;
+
+static exception_type_t
+completion(conf_object_t *obj, transaction_t *t, exception_type_t ex)
+{
+    my_device_t *dev = (my_device_t *)obj;
+
+    // read out the read result
+    uint32 value = SIM_get_transaction_value_le(t);
+
+    // "process" the value here
+    dev-&gt;reg_a = value;
+
+    // free transaction
+    my_trans_t *my_t = (my_trans_t *)t;
+    MM_FREE(my_t);
+    return ex;
+}
+
+static void
+issue_asynchronous_read(my_device_t *dev, uint64 addr)
+{
+    my_trans_t *m = MM_MALLOC(1, my_trans_t);
+    *m = (my_trans_t){
+        .t = { m-&gt;atoms },
+        .atoms = {
+            ATOM_flags(0),  // zero flags value denotes a read transaction
+            ATOM_size(sizeof m-&gt;buf),
+            ATOM_data(m-&gt;buf),
+            ATOM_initiator(&amp;dev-&gt;obj),
+            ATOM_completion(completion),
+            ATOM_LIST_END,
+        },
+    };
+    exception_type_t ex = trans_iface-&gt;issue(dst_obj, &amp;m-&gt;t, addr);
+    SIM_monitor_transaction(&amp;m-&gt;t, ex);
+}
+</code></pre>
+
+When the transaction is completed, then the <code>completion</code> callback is invoked. The return value from the completion function should normally be the exception code received as an argument.<p></p>
+<p>The completion callback will never be invoked before the call to <code>SIM_monitor_transaction</code> is done. If the transaction has been completed synchronously, then the return value from <code>issue</code> is a code other than <code>Sim_PE_Deferred</code>, and then <code>SIM_monitor_transaction</code> invokes the callback. If the transaction is deferred, then <code>SIM_monitor_transaction</code> marks it as being monitored for completion and returns immediately.</p>
+<div class="note">
+<p>Omitting the call to <code>SIM_monitor_transaction</code> results in the transaction never being completed.</p>
+</div>
+<div class="note">
+<p>The object argument to the completion function is obtained from either an <code>owner</code> atom or from an <code>initiator</code> atom. The former takes precedence if both are present. The difference between <code>owner</code> and <code>initiator</code> is primarily that the later defines the initiator of the request, and this object is used for instance when handling direct memory permissions. The <code>owner</code> object is only used as an argument to the completion callback.</p>
+</div>
+<h2 id="python-support">37.10 <a href="#python-support">Python Support</a></h2>
+<h3 id="accessing-transaction-atoms">37.10.1 <a href="#accessing-transaction-atoms">Accessing Transaction Atoms</a></h3>
+<p>The <code>transaction_t</code> type is available in Python and has attributes that in most cases make it unnecessary to use accessors like <code>SIM_transaction_is_write</code>. The following attributes are available:</p>
+<table><thead><tr><th>Attribute</th><th>Description</th></tr></thead><tbody>
+<tr><td>read</td><td>transaction is a read operation</td></tr>
+<tr><td>write</td><td>transaction is a write operation</td></tr>
+<tr><td>fetch</td><td>transaction is an instruction fetch</td></tr>
+<tr><td>inquiry</td><td>transaction is an inquiry operation</td></tr>
+<tr><td>size</td><td>transaction size</td></tr>
+<tr><td>flags</td><td><code>SIM_Transaction_xxx</code> flags</td></tr>
+<tr><td>initiator</td><td>initiator object</td></tr>
+<tr><td>owner</td><td>object passed to completion function</td></tr>
+<tr><td>data</td><td>contents as a byte string</td></tr>
+<tr><td>fill_value</td><td>value for each byte in the transaction</td></tr>
+<tr><td>value_le</td><td>contents as a little endian integer</td></tr>
+<tr><td>value_be</td><td>contents as a big endian integer</td></tr>
+<tr><td>completion</td><td>completion function</td></tr>
+<tr><td>memop</td><td>legacy <code>generic_transaction_t</code></td></tr>
+<tr><td>prev</td><td>parent transaction</td></tr>
+<tr><td>&lt;atom-type&gt;</td><td>atom of type &lt;atom-type&gt;</td></tr>
+</tbody></table>
+<p>The attributes above can be used both as arguments to the constructor and as attributes of the <code>transaction_t</code> object.</p>
+<h3 id="sample-code-to-create-and-issue-a-transaction">37.10.2 <a href="#sample-code-to-create-and-issue-a-transaction">Sample Code to Create and Issue a Transaction</a></h3>
+<p>Below are some simple examples how transactions can be created and issued from Python:</p>
+<p>
+</p><pre><code>import simics
+
+def create_config():
+    '''Creates a memory-space with a single ram object'''
+    space = simics.pre_conf_object('space', 'memory-space')
+    space.ram = simics.pre_conf_object('ram')
+    space.ram.image = simics.pre_conf_object('image', size=0x10000)
+    space.ram(image=space.ram.image)
+    space(map=[[0, space.ram, 0, 0, 0x10000]])
+    simics.SIM_add_configuration([space], None)
+    return simics.SIM_get_object(space.name)
+
+space = create_config()
+
+# Example 1: creating and issuing a synchronous 4-byte write
+t1 = simics.transaction_t(write=True, size=4, value_le=0x12345678)
+space.iface.transaction.issue(t1, 0x1000)
+
+# Example 2: creating and issuing a synchronous 2-byte inquiry read
+t2 = simics.transaction_t(read=True, size=2, inquiry=True)
+space.iface.transaction.issue(t2, 0x1000)
+print("Synchronous read: %x" % t2.value_le)
+
+# Example 3: creating and issuing an asynchronous 4-byte read
+def completion(obj, t, ex):
+    print("Asynchronous read: %x" % t.value_le)
+    return ex
+
+t3 = simics.transaction_t(read=True, size=4, completion=completion)
+ex = space.iface.transaction.issue(t3, 0x1000)
+print("Monitoring for completion...")
+simics.SIM_monitor_transaction(t3, ex)
+</code></pre>
+<p></p>
+<h2 id="custom-atom-types">37.11 <a href="#custom-atom-types">Custom Atom Types</a></h2>
+<p>It is possible to define custom atoms. The following example (complete source code is distributed in the <code>sample-transaction-atoms</code> module) defines two atom types - <code>device_address</code> and <code>complex_atom_t</code>:
+</p><pre><code>#ifndef SAMPLE_TRANSACTION_ATOMS_H
+#define SAMPLE_TRANSACTION_ATOMS_H
+#include &lt;simics/device-api.h&gt;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+// Define the 'device_address' atom type
+#define ATOM_TYPE_device_address uint64
+SIM_CUSTOM_ATOM(device_address);
+
+// Define the 'complex' atom type
+typedef struct {
+        uint64 address;
+        uint32 attributes;
+} complex_atom_t;
+
+// Allow creation from Python, if required
+SIM_PY_ALLOCATABLE(complex_atom_t);
+#define ATOM_TYPE_complex complex_atom_t *
+SIM_CUSTOM_ATOM(complex);
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* SAMPLE_TRANSACTION_ATOMS_H */
+</code></pre>
+
+The types should also be registered from the module's <code>init_local</code> function:
+<pre><code>#include "sample-transaction-atoms.h"
+
+void
+init_local(void)
+{
+        ATOM_register_device_address();
+        ATOM_register_complex();
+
+        // function_with_sample_code contains sample code showing how
+        // to create transactions and access the new atoms we just defined.
+        function_with_sample_code();
+}
+</code></pre>
+
+To get Python support for the new atom type, the header needs to be listed in the <code>IFACE_FILES</code> module's makefile variable.<p></p>
+<p>Custom atom types can be used just like the pre-defined ones. Below is an example how the example atoms above can be used from Python:
+</p><pre><code>from simics import (
+    SIM_load_module,
+    transaction_t,
+)
+
+# Load the module defining custom transaction atoms:
+SIM_load_module('sample-transaction-atoms')
+# Import the complex_atom_t type from the custom_transaction_atoms module:
+from simmod.sample_transaction_atoms.sample_transaction_atoms import (
+    complex_atom_t,
+)
+
+
+# Transaction with the device_address atom
+t1 = transaction_t(write=True, size=8, device_address=0x7)
+print(f"Device address: {t1.device_address:#x}")
+
+# Transaction with the complex atom
+t2 = transaction_t(
+    complex=complex_atom_t(address=0x10, attributes=0x5))
+print(f"complex.address: {t2.complex.address:#x}")
+print(f"complex.attributes: {t2.complex.attributes:#x}")
+</code></pre>
+
+From C, custom atoms are retrieved using type-safe accessors, e.g.<p></p>
+<pre><code>uint64 dev_address = ATOM_get_transaction_device_address(t);
+complex_atom_t *comp = ATOM_get_transaction_complex(t);
+</code></pre>
+<p>If the atom does not exist, then <code>0</code> or <code>NULL</code> will be returned, depending on the defined type. If it is important to handle specially the case when an atom is not present at all, one can use the <code>ATOM_transaction_&lt;type&gt;</code> accessor function instead:
+</p><pre><code>        const uint64 *dev_address = ATOM_transaction_device_address(&amp;t);
+        if (dev_address != NULL) {
+                // atom is present, pointer is valid
+                SIM_printf("Device address: %#llx\n", *dev_address);
+        } else {
+                // atom is not present
+                SIM_printf("Device address atom is not present\n");
+        }
+</code></pre>
+
+<code>ATOM_transaction_&lt;type&gt;</code> accessor functions do not transfer data ownership: the pointer returned by the function may not be valid outside of the call chain.<p></p>
+<h2 id="transaction-chaining">37.12 <a href="#transaction-chaining">Transaction Chaining</a></h2>
+<p>Two or more transactions can be chained together into a linked list with the help of the <code>prev</code> field in the <code>transaction_t</code> type. This is useful primarily to append atoms to an existing transaction. API functions that look for a specific atom examine the atom list of the last transaction first, then the atom list of its parent and so on until an atom of the correct kind has been found.</p>
+<div class="note">
+<p>Simics does not consult the parent of a transaction when looking for a <code>completion</code> or <code>owner</code> atom. These atoms are always associated with a specific transaction.</p>
+</div>
+<h3 id="transaction-chaining-example">37.12.1 <a href="#transaction-chaining-example">Transaction Chaining Example</a></h3>
+<p>The following sample code defines an <code>appender</code> class that appends the <code>device_address</code> atom to incoming transactions and forwards them to another device:</p>
+<p>
+</p><pre><code>import conf
+import pyobj
+import simics
+
+# Load the module that defines the device_address atom.
+# See section about custom atom types for more information.
+simics.SIM_load_module('sample-transaction-atoms')
+
+# Translator that appends the device_address atoms to transactions
+class appender(pyobj.ConfObject):
+    class transaction_translator(pyobj.Interface):
+        def translate(self, addr, access, t, clbk, data):
+
+            def completion(obj, t, ex):
+                print("Completion of chained transaction")
+                return ex
+
+            self.t = simics.transaction_t(
+                prev=t,
+                device_address=0x20,
+                completion=completion)
+
+            translation = simics.translation_t(
+                target=self._up.target.map_target)
+
+            ex = clbk(translation, self.t, data)
+            return simics.SIM_monitor_chained_transaction(self.t, ex)
+
+    class target(pyobj.Attribute):
+        '''Target for accesses. It can be NIL. In that case accesses
+        are terminated with the Sim_PE_IO_Not_Taken exception.'''
+        attrattr = simics.Sim_Attr_Optional
+        attrtype = "o|n"
+        def _initialize(self):
+            self.val = None
+            self.map_target = None
+        def getter(self):
+            return self.val
+        def setter(self, val):
+            if self.map_target:
+                simics.SIM_free_map_target(self.map_target)
+            self.val = val
+            self.map_target = (simics.SIM_new_map_target(val, None, None)
+                               if val else None)
+</code></pre>
+<p></p>
+<p>The <code>appender</code> class above supports asynchronous transactions, as indicated by the presence of the <code>completion</code> atom. If the <code>completion</code> atom is omitted, then the call to <code>SIM_monitor_chained_transaction</code> should be removed and the exception code returned directly.</p>
+<p>The <code>SIM_monitor_chained_transaction</code> functions like <code>SIM_monitor_transaction</code> except that when the chained transaction is completed, its parent will also be completed using the exception code returned by the chained completion function.</p>
+<p>Below is a sample code that creates a test configuration with an object of the <code>appender</code> class and issues a transaction:</p>
+<p>
+</p><pre><code># Endpoint device class
+class mydev(pyobj.ConfObject):
+    class transaction(pyobj.Interface):
+        def issue(self, t, addr):
+            print("address: %x, size: %x, device-address: %x" % (
+                addr, t.size, t.device_address))
+            return simics.Sim_PE_No_Exception
+
+def create_test_configuration():
+    mydev = simics.pre_conf_object('mydev', 'mydev')
+    appender = simics.pre_conf_object('appender', 'appender', target=mydev)
+    simics.SIM_add_configuration([mydev, appender], None)
+
+def issue_transaction(destination, addr):
+    # Create an asynchronous 8-byte read transaction:
+    def completion(obj, t, ex):
+        print("Completion of original transaction")
+        return ex
+    t = simics.transaction_t(size=8, completion=completion)
+
+    # Issue transaction:
+    mt = simics.SIM_new_map_target(destination, None, None)
+    ex = simics.SIM_issue_transaction(mt, t, addr)
+    simics.SIM_monitor_transaction(t, ex)
+
+    # In this simple example we just free 'mt'. In the real device model it is
+    # beneficial to store it and use whenever transactions are to be issued:
+    simics.SIM_free_map_target(mt)
+
+create_test_configuration()
+issue_transaction(conf.appender, 0x1000)
+</code></pre>
+<p></p>
+<p>The following output is generated when the <code>issue_transaction</code> function is executed:</p>
+<pre><code class="language-simics">simics&gt; <strong>@issue_transaction(conf.appender, 0x1000)</strong>
+address: 1000, size: 8, device-address: 20
+Completion of chained transaction
+Completion of original transaction
+</code></pre>
+<h2 id="transaction-checkpointing">37.13 <a href="#transaction-checkpointing">Transaction Checkpointing</a></h2>
+<p>Since asynchronously issued transactions are not always completed immediately, they need to be checkpointable. Checkpointing is performed as follows:</p>
+<div class="dl">
+<ul>
+<li><span class="term" id="dt:initiator">Initiator</span><br>
+The initiator of the transaction checkpoints the contents of the transaction and the transaction id. The transaction id is returned by the <code>SIM_get_transaction_id</code> function.</li>
+<li><span class="term" id="dt:endpoint">Endpoint</span><br>
+The endpoint checkpoints the transaction id of the deferred transaction.</li>
+</ul>
+</div>
+<p>At checkpoint restore, the following should be done:</p>
+<div class="dl">
+<ul>
+<li><span class="term" id="dt:initiator-2">Initiator</span><br>
+The initiator creates a new transaction using the checkpointed state. The recreated transaction together with the checkpointed id is passed to <code>SIM_reconnect_transaction</code>.</li>
+<li><span class="term" id="dt:endpoint-2">Endpoint</span><br>
+The endpoint creates a new transaction handle by calling <code>SIM_defer_transaction</code> with a <code>NULL</code> transaction argument. The recreated transaction together with the checkpointed id is passed to <code>SIM_reconnect_transaction</code>.</li>
+</ul>
+</div>
+<div class="note">
+<p>The value returned by <code>SIM_get_transaction_id</code> should not be cached since it is not necessarily stable during execution. Moreover, checkpointing will fail with an error if the function is not called for each uncompleted transaction.</p>
+</div>
+<div class="note">
+<p>A device appending a chained transaction should follow the same checkpoint flow as a regular initiator. Only appended atoms should be checkpointed and restored. The <code>prev</code> pointer is restored automatically by the <code>SIM_reconnect_transaction</code> call.</p>
+</div>
+<h2 id="reverse-execution">37.14 <a href="#reverse-execution">Reverse Execution</a></h2>
+<p>When reverse execution restores an in-memory checkpoint, then all uncompleted transactions are first canceled with the completion code <code>Sim_PE_Cancelled</code>. This means that all deferred transactions have been released when the attribute setters subsequently are called.</p>
+<h2 id="legacy-support">37.15 <a href="#legacy-support">Legacy Support</a></h2>
+<p>Simics Core has a conversion layer that automatically converts <code>generic_transaction_t</code> transactions to <code>transactions_t</code> transactions, and vice versa. For instance, a memory operation issued to a memory space using an old interface will be converted to a <code>transaction_t</code> before it is issued to a device implementing the <code>transaction</code> interface. Whenever conversion occurs, the original transaction can be obtained as follows:</p>
+<ul>
+<li>the <code>generic_transaction_t</code> transaction has a <code>transaction</code> field which points to the original transaction</li>
+<li>the <code>transaction_t</code> transaction has a <code>memop</code> atom with a pointer to the original transaction.</li>
+</ul>
+<h2 id="transaction-wait">37.16 <a href="#transaction-wait">Transaction Wait</a></h2>
+<p>The API function <code>SIM_transaction_wait</code> can be used together with a <code>NULL</code> completion atom to issue a transaction which can be completed asynchronously, but is handled as a synchronous transaction by the initiator. An example in C is given below:
+</p><pre><code>    uint8 buf[8] = { 0 };  // USER-TODO: fill buf with the actual data to write
+    atom_t atoms[] = {
+        ATOM_flags(Sim_Transaction_Write),
+        ATOM_data(buf),
+        ATOM_size(sizeof buf),
+        ATOM_completion(NULL),
+        ATOM_LIST_END
+    };
+    transaction_t t = { atoms };
+    exception_type_t ex = trans_iface-&gt;issue(dst_obj, &amp;t, addr);
+    ex = SIM_transaction_wait(&amp;t, ex);
+    // The transaction 't' is completed at this point.
+</code></pre>
+
+The <code>SIM_transaction_wait</code> function blocks until the transaction has completed. What happens is that Simics switches to a different user-level thread which continues the execution, typically by advancing time without dispatching instructions.<p></p>
+<div class="note">
+<p>If the context from which <code>issue</code> function is called does not support user-level thread switching, then the transaction will not support asynchronous completion. In other words, <code>SIM_defer_transaction</code> will return <code>NULL</code> in that case.</p>
+</div>
+<div class="note">
+<p><code>SIM_transaction_wait</code> can cause issues for devices further up in the call stack since such devices might see additional accesses before blocking call returns, and such accesses might be unexpected. It is recommended that <code>SIM_transaction_wait</code> is used only in situations where it is known that this is not a problem. Native Simics 6 CPUs should typically support <code>SIM_transaction_wait</code> without issues.</p>
+</div>
+<div class="note">
+<p>Checkpointing is not supported while a transaction is being waited upon with <code>SIM_transaction_wait</code>.</p>
+</div>
+<h2 id="cli-support-for-transactions">37.17 <a href="#cli-support-for-transactions">CLI support for transactions</a></h2>
+<p>Simics provides <code>wait-for-read</code>, <code>wait-for-write</code>, <code>wait-for-get</code>, <code>wait-for-set</code>, <code>&lt;transaction&gt;.wait-for-read</code>, <code>&lt;transaction&gt;.wait-for-write</code>, <code>&lt;transaction&gt;.wait-for-get</code>, and <code>&lt;transaction&gt;.wait-for-set</code> commands which allow to issue transactions from a command line. The commands are available from script branches. Here is an example of a script branch which issues a read transaction and prints a returned value once the transaction is completed:</p>
+<pre><code class="language-simics">simics&gt; <strong>script-branch "read transaction" {</strong>
+    $val = (wait-for-read address = 0x1000 size = 4 -l)
+    echo "Read value: %#x" % $val
+}
+</code></pre>
+<p>If the transaction in the example above completes synchronously then the script branch doesn't wait and completes immediately.</p>
+<p>The <code>list-transactions</code> command allows to see the list of the transactions which have not completed yet.</p>
+
+<div class="chain">
+<a href="extension-classes.html">36 Extension Classes</a>
+<a href="checkpoint-compatibility.html">38 Checkpoint Compatibility</a>
+</div>

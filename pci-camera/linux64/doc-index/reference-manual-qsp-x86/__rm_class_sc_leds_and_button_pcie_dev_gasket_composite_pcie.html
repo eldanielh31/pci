@@ -1,0 +1,59 @@
+<!doctype html>
+<head>
+<meta charset="utf-8">
+<title>sc_leds_and_button_pcie_dev_gasket_composite_Pcie</title>
+<link rel="stylesheet" href="simics.css">
+<script>function postUrl() {
+    window.parent.postMessage({ content_url: window.location.href }, "*");
+}
+if (window.parent != null && window.parent != window) {
+    postUrl();
+    window.addEventListener("hashchange", function () {
+        postUrl();
+    });
+} else {
+    // Check if we are part of a Simics doc site and redirect if we are
+    fetch("../simics-doc-site-marker", { method: "HEAD" }).then(response => {
+        if (response.ok) {
+            window.location = "..#" + window.location.href;
+        } else {
+            console.info("Not part of a Simics documentation site");
+        }
+    }).catch(error => {
+        console.warn("Failed to check if this is a Simics documentation site:",
+            error);
+    });
+}</script>
+</head>
+<div class="chain">
+<a href="__rm_class_sc_leds_and_button_pcie_dev_gasket_composite_pci.html">sc_leds_and_button_pcie_dev_gasket_composite_Pci</a>
+<a href="__rm_class_sc_leds_and_button_pcie_dev_gasket_simics2systemc_signal.html">sc_leds_and_button_pcie_dev_gasket_simics2systemc_Signal</a>
+</div>
+<div class="path">
+<a href="index.html">Quick-Start Platform x86 Reference Manual</a>
+&nbsp;/&nbsp;
+<a href="classes.html">4 Classes</a>
+&nbsp;/&nbsp;</div>
+<h1 class="jdocu"><a class="not-numbered" name="__rm_class_sc_leds_and_button_pcie_dev_gasket_composite_Pcie">sc_leds_and_button_pcie_dev_gasket_composite_Pcie</a></h1>
+<p>
+
+<a name="sc_leds_and_button_pcie_dev_gasket_composite_Pcie"></a></p><dl class="jdocu_di">
+<dt class="jdocu_descitem">Description</dt><dd class="jdocu_descitem">Class for binding Simics interface to SystemC Pcie Gasket.
+</dd>
+<dt class="jdocu_descitem"><b>Interfaces Implemented</b></dt><dd class="jdocu_descitem"><a class="jdocu" href="undocumented-interfaces.html#__rm_interface_conf_object">conf_object</a>, <a class="jdocu" href="undocumented-interfaces.html#__rm_interface_log_object">log_object</a>, <a class="jdocu" href="undocumented-interfaces.html#__rm_interface_pcie_device">pcie_device</a>, <a class="jdocu" href="undocumented-interfaces.html#__rm_interface_signal">signal</a>, <a class="jdocu" href="undocumented-interfaces.html#__rm_interface_transaction">transaction</a></dd>
+<dt class="jdocu_descitem"><b>Port Objects</b></dt><dd class="jdocu_descitem"><b>port.cfg</b> &lt;pcie_map_helper_cpp&gt; : The help object maps to the PCIe CFG space<br><b>port.io</b> &lt;pcie_map_helper_cpp&gt; : The help object maps to the PCIe IO space<br><b>port.mem</b> &lt;pcie_map_helper_cpp&gt; :  The help object maps to the PCIe MEM space<br><b>port.msg</b> &lt;pcie_map_helper_cpp&gt; : The help object mapes to the PCIe MSG space</dd>
+<dt class="jdocu_descitem"><b>Provided By</b></dt><dd class="jdocu_descitem"><a class="jdocu" href="modules.html#__rm_module_sc-leds-and-button-pcie-dev">sc-leds-and-button-pcie-dev</a>
+</dd>
+</dl><p></p><h2 class="jdocu"><a class="not-numbered" name="Attributes">Attributes</a></h2>
+<p></p><dl><dt id="dt:address_id_io_map"><b><i>address_id_io_map</i></b></dt><p><a name="__rm_attribute_sc_leds_and_button_pcie_dev_gasket_composite_Pcie_address_id_io_map"></a></p><dd><b>Pseudo</b> attribute; <b>read-only</b> access; type: <code>[[[ii]i]*]</code>.
+Internal. The map from IO address range to socket ID</dd></dl><p></p><dl><dt id="dt:address_id_mem_map"><b><i>address_id_mem_map</i></b></dt><p><a name="__rm_attribute_sc_leds_and_button_pcie_dev_gasket_composite_Pcie_address_id_mem_map"></a></p><dd><b>Pseudo</b> attribute; <b>read-only</b> access; type: <code>[[[ii]i]*]</code>.
+Internal. The map from MEM address range to socket ID</dd></dl><p></p><dl><dt id="dt:device"><b><i>device</i></b></dt><p><a name="__rm_attribute_sc_leds_and_button_pcie_dev_gasket_composite_Pcie_device"></a></p><dd><b>Required</b> attribute; <b>read/write</b> access; type: <code>string</code>.
+Name of the SystemC object that implements the PcieDeviceQueryInterface and PcieBaseAddressRegisterQueryInterface.All TLM2 sockets returned by the object must have BUSWIDTH = 32 and TYPES = tlm::tlm_base_protocol_types</dd></dl><p></p><dl><dt id="dt:enable_base_address_subtraction"><b><i>enable_base_address_subtraction</i></b></dt><p><a name="__rm_attribute_sc_leds_and_button_pcie_dev_gasket_composite_Pcie_enable_base_address_subtraction"></a></p><dd><b>Optional</b> attribute; <b>read/write</b> access; type: <code>boolean</code>.
+If set, MEM/IO transaction will receive only the offset to the base address. Otherwise, it receives the whole base address + offset. Default enabled</dd></dl><p></p><dl><dt id="dt:simulation"><b><i>simulation</i></b></dt><p><a name="__rm_attribute_sc_leds_and_button_pcie_dev_gasket_composite_Pcie_simulation"></a></p><dd><b>Required</b> attribute; <b>read/write</b> access; type: <code>object</code>.
+Simics object implementing the SystemC Simulation interface.</dd></dl><p></p><dl><dt id="dt:upstream_target"><b><i>upstream_target</i></b></dt><p><a name="__rm_attribute_sc_leds_and_button_pcie_dev_gasket_composite_Pcie_upstream_target"></a></p><dd><b>Optional</b> attribute; <b>read/write</b> access; type: <code>object</code> or <code>nil</code>.
+The PCIe upstream target to connect to.</dd></dl><p>
+</p>
+<div class="chain">
+<a href="__rm_class_sc_leds_and_button_pcie_dev_gasket_composite_pci.html">sc_leds_and_button_pcie_dev_gasket_composite_Pci</a>
+<a href="__rm_class_sc_leds_and_button_pcie_dev_gasket_simics2systemc_signal.html">sc_leds_and_button_pcie_dev_gasket_simics2systemc_Signal</a>
+</div>

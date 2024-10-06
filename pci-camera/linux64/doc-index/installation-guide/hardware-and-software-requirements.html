@@ -1,0 +1,87 @@
+<!doctype html>
+<head>
+<meta charset="utf-8">
+<title>2 Hardware and Software Requirements</title>
+<link rel="stylesheet" href="simics.css">
+<script>function postUrl() {
+    window.parent.postMessage({ content_url: window.location.href }, "*");
+}
+if (window.parent != null && window.parent != window) {
+    postUrl();
+    window.addEventListener("hashchange", function () {
+        postUrl();
+    });
+} else {
+    // Check if we are part of a Simics doc site and redirect if we are
+    fetch("../simics-doc-site-marker", { method: "HEAD" }).then(response => {
+        if (response.ok) {
+            window.location = "..#" + window.location.href;
+        } else {
+            console.info("Not part of a Simics documentation site");
+        }
+    }).catch(error => {
+        console.warn("Failed to check if this is a Simics documentation site:",
+            error);
+    });
+}</script>
+</head>
+<div class="chain">
+<a href="introduction.html">1 Introduction</a>
+<a href="installation.html">3 Installing Packages</a>
+</div>
+<div class="path">
+<a href="index.html">Installation Guide</a>
+&nbsp;/&nbsp;</div>
+<h1 id="hardware-and-software-requirements">2 <a href="#hardware-and-software-requirements">Hardware and Software Requirements</a></h1>
+<h2 id="hardware-requirements">2.1 <a href="#hardware-requirements">Hardware requirements</a></h2>
+<p>The minimum hardware requirements are:</p>
+<ul>
+<li>64-bit Intel® Architecture processor, either Haswell or newer performance core ("big core") architecture, or Gracemont or newer efficiency core (Atom) architecture.</li>
+<li>VMP requires that Intel® Architecture (Intel® VT-x) is enabled in UEFI/BIOS and visible to the VMXMON kernel module.</li>
+<li>16 GB of RAM.</li>
+<li>8 GB of disk space.</li>
+</ul>
+<p>More RAM and/or disk is often necessary, depending on the requirements of the simulated machine.</p>
+<h2 id="linux-64-bit">2.2 <a href="#linux-64-bit">Linux (64-bit)</a></h2>
+<p><strong>Run Time Requirements</strong></p>
+<p>A modern Linux distribution (<em><a href="#note1">1</a></em>), with at least</p>
+<ul>
+<li>GLIBC 2.22 or later.</li>
+<li>GTK 2.24 or later — for the GUI.</li>
+</ul>
+<p>Supported examples are Suse Linux Enterprise Server 12 and Red Hat Enterprise Linux 8.</p>
+<p><strong>Model Builder Requirements</strong></p>
+<ul>
+<li>GCC 6.3 compiler. Recommended to use GCC 12 or later.</li>
+<li>Typical GNU-based development environment, with GNU Make 4.1 or later.</li>
+<li>Optional: CMake version 3.4 or later.</li>
+<li>For SystemC*, see footnote <em>(<a href="#note2">2</a>)</em>.</li>
+</ul>
+<h2 id="microsoft-windows-64-bit">2.3 <a href="#microsoft-windows-64-bit">Microsoft Windows (64-bit)</a></h2>
+<p><strong>Run Time Requirements</strong></p>
+<ul>
+<li>Windows 10, Windows Server 2016, or later.</li>
+<li>Visual Studio 2015 run-time libraries: <a href="https://www.microsoft.com/en-us/download/details.aspx?id=48145" rel="noopener noreferrer" target="_top">www.microsoft.com/en-us/download/details.aspx?id=48145</a>.</li>
+<li>Simics Base and the libraries it ships are built for the Windows Universal C Runtime (UCRT).</li>
+</ul>
+<p><strong>Model Builder Requirements</strong></p>
+<ul>
+<li>MinGW GCC 6.3 or Microsoft Visual Studio 2015 compiler <em>(<a href="#note3">3</a>)</em>. Recommended to use MinGW GCC 12 or later, built for UCRT and POSIX threads.</li>
+<li>MinGW development environment, with GNU Make 4.1 or later.</li>
+<li>Optional: CMake version 3.4 or later.</li>
+<li>For SystemC*, see footnote <em>(<a href="#note2">2</a>)</em>.</li>
+</ul>
+<br>
+<br>
+<div class="note">
+<ol>
+<li><span id="note1"></span>Installing additional packages may be necessary.</li>
+<li><span id="note2"></span>The Intel® Simics® SystemC* library has its own compiler requirements, see the <a href="../systemc-library/index.html"><em>SystemC* Library</em></a> programming guide for details.</li>
+<li><span id="note3"></span>The Microsoft Visual C++ compilers are only supported for C++ modules.</li>
+</ol>
+</div>
+
+<div class="chain">
+<a href="introduction.html">1 Introduction</a>
+<a href="installation.html">3 Installing Packages</a>
+</div>

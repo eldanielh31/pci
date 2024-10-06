@@ -1,0 +1,34 @@
+{
+  "is_book": false,
+  "anchor": "release_notes",
+  "file": "index.html",
+  "name": "Crypto Engine Release Notes",
+  "headings": [
+    {
+      "level": 1,
+      "anchor": "Introduction",
+      "text": "1 Introduction"
+    },
+    {
+      "level": 1,
+      "anchor": "Changes-Since-Version-6.0.0",
+      "text": "2 Changes Since Version 6.0.0"
+    },
+    {
+      "level": 1,
+      "anchor": "Changes-in-version-6",
+      "text": "3 Changes in version 6"
+    },
+    {
+      "level": 1,
+      "anchor": "Limitations",
+      "text": "4 Limitations"
+    },
+    {
+      "level": 1,
+      "anchor": "Detailed-List-of-Limitations",
+      "text": "5 Detailed List of Limitations"
+    }
+  ],
+  "children": []
+}
