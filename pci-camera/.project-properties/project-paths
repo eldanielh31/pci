@@ -1,5 +1,0 @@
-project: /home/daniel/simics-projects/pci-camera
-simics-root: /home/daniel/Desktop/SIMICS/simics-6.0.198
-simics-model-builder: /home/daniel/Desktop/SIMICS/simics-6.0.198
-simics-python: /home/daniel/Desktop/SIMICS/simics-6.0.198
-mingw: None
