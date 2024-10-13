@@ -1,0 +1,1 @@
+savedcmd_/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/pci_driver.mod := printf '%s\n'   pci_driver.o | awk '!x[$$0]++ { print("/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/"$$0) }' > /home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/pci_driver.mod

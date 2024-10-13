@@ -1,0 +1,193 @@
+<!doctype html>
+<head>
+<meta charset="utf-8">
+<title>legacy-upstream-pcie-adapter</title>
+<link rel="stylesheet" href="simics.css">
+<script>function postUrl() {
+    window.parent.postMessage({ content_url: window.location.href }, "*");
+}
+if (window.parent != null && window.parent != window) {
+    postUrl();
+    window.addEventListener("hashchange", function () {
+        postUrl();
+    });
+} else {
+    // Check if we are part of a Simics doc site and redirect if we are
+    fetch("../simics-doc-site-marker", { method: "HEAD" }).then(response => {
+        if (response.ok) {
+            window.location = "..#" + window.location.href;
+        } else {
+            console.info("Not part of a Simics documentation site");
+        }
+    }).catch(error => {
+        console.warn("Failed to check if this is a Simics documentation site:",
+            error);
+    });
+}</script>
+</head>
+<div class="chain">
+<a href="rm-class-legacy-clock-extension.html">legacy-clock-extension</a>
+<a href="rm-class-linux_analyzer.html">linux_analyzer</a>
+</div>
+<div class="path">
+<a href="index.html">Simics Reference Manual</a>
+&nbsp;/&nbsp;
+<a href="rm-classes.html">5 Classes</a>
+&nbsp;/&nbsp;</div>
+<h1 id="legacy-upstream-pcie-adapter"><a href="#legacy-upstream-pcie-adapter">legacy-upstream-pcie-adapter</a></h1>
+<section class="doc-item not-numbered not-in-toc">
+<h3 id="description">
+<a href="#description">Description</a>
+</h3>
+Glue bridge to connect new style PCIe endpoints and / root ports (including multi-function) to old style upstream bridges, switches and root ports. Normally the glue bridge will be connected to a <tt>pcie-bus</tt>.
+<h3 id="interfaces-implemented">
+<a href="#interfaces-implemented">Interfaces Implemented</a>
+</h3>conf_object, log_object, pci_device, pci_express, pci_upstream_operation, pcie_adapter_compat, translator
+<h3 id="notifiers">
+<a href="#notifiers">Notifiers</a>
+</h3>
+<dl>
+<dt id="dt:cell-change">cell-change</dt>
+<dd>Notifier that is triggered after the object's cell was changed.</dd>
+<dt id="dt:object-delete">object-delete</dt>
+<dd>Notifier that is triggered just before Simics object is deleted.</dd>
+<dt id="dt:queue-change">queue-change</dt>
+<dd>Notifier that is triggered after the object's clock was changed. New clock can be obtained with the SIM_object_clock function.</dd>
+<dt id="dt:state-change">state-change</dt>
+<dd>Notifier on potential DML state change</dd>
+</dl>
+<h3 id="port-objects">
+<a href="#port-objects">Port Objects</a>
+</h3>
+<dl>
+<dt id="dt:impl-port-downstream">impl.port.downstream</dt>
+<dd>
+<a href="rm-class-legacy-upstream-pcie-adapter.html#legacy-upstream-pcie-adapter.impl.downstream">legacy-upstream-pcie-adapter.impl.downstream</a>
+</dd>
+<dt id="dt:port-hreset">port.HRESET</dt>
+<dd>
+<a href="rm-class-legacy-upstream-pcie-adapter.html#legacy-upstream-pcie-adapter.HRESET">legacy-upstream-pcie-adapter.HRESET</a>
+</dd>
+<dt id="dt:port-sreset">port.SRESET</dt>
+<dd>
+<a href="rm-class-legacy-upstream-pcie-adapter.html#legacy-upstream-pcie-adapter.SRESET">legacy-upstream-pcie-adapter.SRESET</a>
+</dd>
+</dl>
+<h3 id="commands-for-this-class">
+<a href="#commands-for-this-class">Commands for this class</a>
+</h3>
+<ul>
+<li>
+<a href="rm-cmd-legacy-upstream-pcie-adapter.info.html">info</a>
+ – print information about the object</li>
+<li>
+<a href="rm-cmd-legacy-upstream-pcie-adapter.status.html">status</a>
+ – print status of the object</li>
+</ul>
+<h3 id="commands-for-interface-translator">
+<a href="#commands-for-interface-translator">Commands for interface translator</a>
+</h3>
+<ul>
+<li>
+<a href="rm-cmd-translator.memory-map.html">memory-map</a>
+ – print physical memory map</li>
+</ul>
+<h3 id="attributes">
+<a href="#attributes">Attributes</a>
+</h3>
+<dl>
+<dt id="dt:devices">
+<i>devices</i>
+</dt>
+<dd>
+<b>Pseudo</b> attribute; 
+<b>read/write</b> access; type: 
+<code>[[iio]|[io]|o*]</code>
+<br>Connected PCIe device. Format is (function_number, object)*). Currently only one device is supported, and it must have both device number 0 as well as function number 0</dd>
+</dl>
+<h3 id="provided-by">
+<a href="#provided-by">Provided By</a>
+</h3>
+<a href="mod.legacy-upstream-pcie-adapter.html">legacy-upstream-pcie-adapter</a>
+</section>
+<h2 id="legacy-upstream-pcie-adapter.HRESET"><a href="#legacy-upstream-pcie-adapter.HRESET">legacy-upstream-pcie-adapter.HRESET</a></h2>
+<section class="doc-item not-numbered not-in-toc">
+<h3 id="interfaces-implemented-2">
+<a href="#interfaces-implemented-2">Interfaces Implemented</a>
+</h3>conf_object, log_object, signal
+<h3 id="notifiers-2">
+<a href="#notifiers-2">Notifiers</a>
+</h3>
+<dl>
+<dt id="dt:cell-change-2">cell-change</dt>
+<dd>Notifier that is triggered after the object's cell was changed.</dd>
+<dt id="dt:object-delete-2">object-delete</dt>
+<dd>Notifier that is triggered just before Simics object is deleted.</dd>
+<dt id="dt:queue-change-2">queue-change</dt>
+<dd>Notifier that is triggered after the object's clock was changed. New clock can be obtained with the SIM_object_clock function.</dd>
+</dl>
+</section>
+<h2 id="legacy-upstream-pcie-adapter.SRESET"><a href="#legacy-upstream-pcie-adapter.SRESET">legacy-upstream-pcie-adapter.SRESET</a></h2>
+<section class="doc-item not-numbered not-in-toc">
+<h3 id="interfaces-implemented-3">
+<a href="#interfaces-implemented-3">Interfaces Implemented</a>
+</h3>conf_object, log_object, signal
+<h3 id="notifiers-3">
+<a href="#notifiers-3">Notifiers</a>
+</h3>
+<dl>
+<dt id="dt:cell-change-3">cell-change</dt>
+<dd>Notifier that is triggered after the object's cell was changed.</dd>
+<dt id="dt:object-delete-3">object-delete</dt>
+<dd>Notifier that is triggered just before Simics object is deleted.</dd>
+<dt id="dt:queue-change-3">queue-change</dt>
+<dd>Notifier that is triggered after the object's clock was changed. New clock can be obtained with the SIM_object_clock function.</dd>
+</dl>
+</section>
+<h2 id="legacy-upstream-pcie-adapter.impl.downstream"><a href="#legacy-upstream-pcie-adapter.impl.downstream">legacy-upstream-pcie-adapter.impl.downstream</a></h2>
+<section class="doc-item not-numbered not-in-toc">
+<h3 id="interfaces-implemented-4">
+<a href="#interfaces-implemented-4">Interfaces Implemented</a>
+</h3>conf_object, log_object, pcie_map, transaction
+<h3 id="notifiers-4">
+<a href="#notifiers-4">Notifiers</a>
+</h3>
+<dl>
+<dt id="dt:cell-change-4">cell-change</dt>
+<dd>Notifier that is triggered after the object's cell was changed.</dd>
+<dt id="dt:object-delete-4">object-delete</dt>
+<dd>Notifier that is triggered just before Simics object is deleted.</dd>
+<dt id="dt:queue-change-4">queue-change</dt>
+<dd>Notifier that is triggered after the object's clock was changed. New clock can be obtained with the SIM_object_clock function.</dd>
+</dl>
+<h3 id="port-objects-2">
+<a href="#port-objects-2">Port Objects</a>
+</h3>
+<dl>
+<dt id="dt:downstream_port">downstream_port</dt>
+<dd>
+<a href="rm-class-pcie-downstream-port.html#pcie-downstream-port">pcie-downstream-port</a>
+ – This class manages the downstream address spaces and connected devices for PCIe switches and Root Complexes</dd>
+</dl>
+<h3 id="commands-for-interface-transaction">
+<a href="#commands-for-interface-transaction">Commands for interface transaction</a>
+</h3>
+<ul>
+<li>
+<a href="rm-cmd-transaction.wait-for-get.html">wait-for-get</a>
+ – issue an inquiry read transaction and wait for it to complete</li>
+<li>
+<a href="rm-cmd-transaction.wait-for-read.html">wait-for-read</a>
+ – issue a read transaction and wait for it to complete</li>
+<li>
+<a href="rm-cmd-transaction.wait-for-set.html">wait-for-set</a>
+ – issue an inquiry write transaction and wait for it to complete</li>
+<li>
+<a href="rm-cmd-transaction.wait-for-write.html">wait-for-write</a>
+ – issue a write transaction and wait for it to complete</li>
+</ul>
+</section>
+<div class="chain">
+<a href="rm-class-legacy-clock-extension.html">legacy-clock-extension</a>
+<a href="rm-class-linux_analyzer.html">linux_analyzer</a>
+</div>
