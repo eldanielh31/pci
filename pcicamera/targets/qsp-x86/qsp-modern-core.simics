@@ -1,3 +1,0 @@
-# Auto-generated file. Any changes will be overwritten!
-decl { substitute "/home/daniel/Desktop/SIMICS/simics-qsp-cpu-6.0.22/targets/qsp-x86/qsp-modern-core.simics" }
-run-command-file "/home/daniel/Desktop/SIMICS/simics-qsp-cpu-6.0.22/targets/qsp-x86/qsp-modern-core.simics"
