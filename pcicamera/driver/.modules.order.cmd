@@ -1,1 +1,0 @@
-savedcmd_/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/modules.order := {   echo /home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/pci_driver.o; :; } > /home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/modules.order

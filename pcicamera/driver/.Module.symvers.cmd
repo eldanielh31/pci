@@ -1,1 +1,0 @@
-savedcmd_/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/Module.symvers -T /home/daniel/Desktop/ProyectoEmpotrados/pcicamera/driver/modules.order -i Module.symvers -e 
