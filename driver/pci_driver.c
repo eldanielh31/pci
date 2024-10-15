@@ -79,10 +79,18 @@ static struct file_operations pci_capture_chr_dev_registration = {
 /***************************************************************************************************************/
 /* Global variables */
 /***************************************************************************************************************/
+/* Structure to manage character device internal data */
+struct character_device_internal_data {
+    struct cdev cdev;
+};
+
 struct pci_dev *pci_dev;
 static int dev_major = MAJOR_NUMBER;
 static struct class *character_device_class = NULL;
 static char image_buffer[MAX_BUFFER_DATA_LEN];  // Buffer to store the image
+
+/* Declare an array to store the internal data for character devices */
+static struct character_device_internal_data chr_dev_data[MAX_CHR_DEV];  // Correction: Now declared globally
 
 /***************************************************************************************************************/
 /* Functions definitions */
@@ -139,7 +147,7 @@ static int register_pci_capture_chr_dev(void) {
     character_device_class = class_create(THIS_MODULE, chr_dev_name);
 
     for (i = 0; i < MAX_CHR_DEV; i++) {
-        cdev_init(&chr_dev_data[i].cdev, &pci_capture_chr_dev_registration);
+        cdev_init(&chr_dev_data[i].cdev, &pci_capture_chr_dev_registration);  // Now chr_dev_data[i] is properly declared
         chr_dev_data[i].cdev.owner = THIS_MODULE;
 
         cdev_add(&chr_dev_data[i].cdev, MKDEV(dev_major, i), 1);
