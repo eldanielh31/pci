@@ -1,0 +1,10 @@
+#!/bin/bash
+# this file will be overwritten by the project setup script
+SIMICS_BASE_PACKAGE="/home/daniel/Desktop/SIMICS/simics-6.0.198"
+export SIMICS_BASE_PACKAGE
+export SIMICS_PYTHON_PACKAGE="/home/daniel/Desktop/SIMICS/simics-6.0.198"
+if [ -f "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/.package-list" ]; then
+    exec "/home/daniel/Desktop/SIMICS/simics-6.0.198/bin/test-runner" --package-list "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/.package-list" --project "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera" "$@"
+else
+    exec "/home/daniel/Desktop/SIMICS/simics-6.0.198/bin/test-runner" --project "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera" "$@"
+fi
