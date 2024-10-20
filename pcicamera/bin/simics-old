@@ -3,4 +3,4 @@
 SIMICS_BASE_PACKAGE="/home/daniel/Desktop/SIMICS/simics-6.0.198"
 export SIMICS_BASE_PACKAGE
 export SIMICS_PYTHON_PACKAGE="/home/daniel/Desktop/SIMICS/simics-6.0.198"
-exec "/home/daniel/Desktop/SIMICS/simics-6.0.198/bin/simics-old" --project "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera" "$@"
+exec "/home/daniel/Desktop/SIMICS/simics-6.0.198/bin/simics-old" --project "/home/daniel/Desktop/pci/pcicamera" "$@"

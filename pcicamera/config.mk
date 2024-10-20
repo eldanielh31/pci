@@ -9,7 +9,7 @@ RAW_EML_PACKAGE=
 RAW_DODOC_PKG=/home/daniel/Desktop/SIMICS/simics-6.0.198
 RAW_PYTHON_PKG=/home/daniel/Desktop/SIMICS/simics-6.0.198
 
-RAW_SIMICS_PACKAGE_LIST=/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/.package-list
+RAW_SIMICS_PACKAGE_LIST=/home/daniel/Desktop/pci/pcicamera/.package-list
 
 INCLUDE_PATHS = /home/daniel/Desktop/SIMICS/simics-6.0.198/src/include
 CXX_INCLUDE_PATHS = /home/daniel/Desktop/SIMICS/simics-6.0.198/linux64/api

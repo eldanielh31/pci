@@ -1,4 +1,4 @@
-project: /home/daniel/Desktop/ProyectoEmpotrados/pcicamera
+project: /home/daniel/Desktop/pci/pcicamera
 simics-root: /home/daniel/Desktop/SIMICS/simics-6.0.198
 simics-model-builder: /home/daniel/Desktop/SIMICS/simics-6.0.198
 simics-python: /home/daniel/Desktop/SIMICS/simics-6.0.198
