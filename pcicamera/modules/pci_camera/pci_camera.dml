@@ -105,9 +105,9 @@ bank regs is function_mapped_bank {
        which should match with the map_func param in one BAR */
     param function = 1;
 
-    register status size 4 @ 0x0 { //Status of the device
-        is write;
-        param init_val = 0x0;
+    register Buffer_Size size 4 @ 0x0 { //Buffer size that ddefines the size of the bufffer. Used to be Status of the device
+        is read_only;
+        param init_val = 256;
         /*0x0: Dispositivo Apagado
         0x1: Dispositivo Encendido
         0x2: Dispositivo aplicando filtro
@@ -115,15 +115,7 @@ bank regs is function_mapped_bank {
         */
     }
 
-    register filter size 4 @ 0x4 { //Filter to be applied
-        is write;
-        param init_val = 0x0;
-        /*0x0: No se está aplicando ningún filtro
-        0x1: Filtro Negativo
-        0x2: FIltro Suavizado*/
-    }
-
-    register file_size size 4 @ 0x8 { // Size of the file
+    register file_size size 4 @ 0x4 { // Size of the file
         is write;
         param init_val = 0x0;
     }
@@ -131,7 +123,7 @@ bank regs is function_mapped_bank {
     //when command register is written with a 1 then the device outputs current data 
     //stored in the input attribute
     // This register will be later modified to help write the bytes of the bmp archive to the buffer.
-    register cmd size 4 @ 0x18 {
+    register cmd size 4 @ 0x8 {
         is write;
         param init_val = 0x0;
         
@@ -154,7 +146,7 @@ bank regs is function_mapped_bank {
     
     // for communicating initial 8 bytes of the file after command=1 and input attr value is populated
     // this register is going to be used to store the bytes of the bmp archive
-    register buffer[i < BUFFER_SIZE] size 1 @ 0x1c + i {
+    register buffer[i < BUFFER_SIZE] size 1 @ 0x12 + i {
         is read_only;
         param init_val = 0x0;
     }

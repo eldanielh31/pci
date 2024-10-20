@@ -31,25 +31,25 @@ $start_profiling_bubblesort_string = "Start profiling the BUBBLESORT by enabling
 
 
 load-module pci_camera_component
+create-pci-camera-component name = my_pci_capture
 load-module module = pci_camera
-create-pci-camera-component name = pci_capture
-connect pci_capture.pci_bus cnt1 = "board.mb.sb.pci_slot[0]"
+connect my_pci_capture.pci_bus cnt1 = "board.mb.nb.pci_slot[1]"
 instantiate-components
 output-radix 16
 
 #For further debug
 #turning all verbose for the device
-pci_capture.log-level -r 4
+my_pci_capture.log-level -r 4
 #write to the command reg for testing
 #pci_capture.dev->input = ""
 #board.mb.sb.ext_mem.map
 #board.mb.sb.ext_mem.write 0xf1000000 + 0x14 0x1 0x4
 #pci_capture.dev.bank.regs->buffer
-script-branch {
-    board.serconsole.con.bp-wait-for-console-string "simics@cl-qsp"
-    board.mb.sb.ext_mem->map = []
-    $map = (board.mb.sb.ext_conf->map)
-    board.mb.sb.ext_conf.write address = $map[0][0] + 0x10 value = 0xf1000000
-    board.mb.sb.ext_conf.write address = $map[0][0] + 0x4 value = 3
-    echo "Done setting device for test"
-}
+#script-branch {
+#    board.serconsole.con.bp-wait-for-console-string "simics@cl-qsp"
+#    board.mb.sb.ext_mem->map = []
+#    $map = (board.mb.sb.ext_conf->map)
+#    board.mb.sb.ext_conf.write address = $map[0][0] + 0x10 value = 0xf1000000
+#    board.mb.sb.ext_conf.write address = $map[0][0] + 0x4 value = 3
+#    echo "Done setting device for test"
+#}

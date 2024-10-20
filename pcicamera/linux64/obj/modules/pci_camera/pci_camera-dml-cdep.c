@@ -270,7 +270,7 @@
     #include <simics/util/bitcount.h>
     #define convert_le64 CONVERT_LE64
 #undef DMLDIR_COMMON_H
-#define DMLDIR_PCI_CAMERA_H "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/modules/pci_camera/pci_camera.h"
+#define DMLDIR_PCI_CAMERA_H "/home/daniel/Desktop/pci/pcicamera/modules/pci_camera/pci_camera.h"
 
     #include <stdio.h>
     #include <stdlib.h>

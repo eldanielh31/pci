@@ -475,8 +475,8 @@
 #line 476 "pci_camera-dml.h"
 #undef DMLDIR_COMMON_H
 
-#define DMLDIR_PCI_CAMERA_H "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/modules/pci_camera/pci_camera.h"
-#line 22 "/home/daniel/Desktop/ProyectoEmpotrados/pcicamera/modules/pci_camera/pci_camera.dml"
+#define DMLDIR_PCI_CAMERA_H "/home/daniel/Desktop/pci/pcicamera/modules/pci_camera/pci_camera.h"
+#line 22 "/home/daniel/Desktop/pci/pcicamera/modules/pci_camera/pci_camera.dml"
 
     #include <stdio.h>
     #include <stdlib.h>
@@ -2536,6 +2536,9 @@ struct __devstruct_1pci_camera_1pci_config {
     struct __devstruct_1pci_camera_1pci_config_2subsystem_vendor_id subsystem_vendor_id;
     struct __devstruct_1pci_camera_1pci_config_1vendor_id vendor_id;
 };
+struct __devstruct_1pci_camera_0regs_1Buffer_Size {
+    uint64 val;
+};
 struct __devstruct_1pci_camera_0regs_0buffer {
     uint64 val[0x100LL];
 };
@@ -2543,12 +2546,6 @@ struct __devstruct_1pci_camera_0regs_0cmd {
     uint64 val;
 };
 struct __devstruct_1pci_camera_0regs_1file_size {
-    uint64 val;
-};
-struct __devstruct_1pci_camera_0regs_0filter {
-    uint64 val;
-};
-struct __devstruct_1pci_camera_0regs_0status {
     uint64 val;
 };
 struct __devstruct_1pci_camera_0regs {
@@ -2559,11 +2556,10 @@ struct __devstruct_1pci_camera_0regs {
     _callback_vect_t _before_write_callbacks;
     conf_object_t *_cached_bank_obj;
     _connection_vect_t _connections;
+    struct __devstruct_1pci_camera_0regs_1Buffer_Size Buffer_Size;
     struct __devstruct_1pci_camera_0regs_0buffer buffer;
     struct __devstruct_1pci_camera_0regs_0cmd cmd;
     struct __devstruct_1pci_camera_0regs_1file_size file_size;
-    struct __devstruct_1pci_camera_0regs_0filter filter;
-    struct __devstruct_1pci_camera_0regs_0status status;
 };
 struct pci_camera {
     conf_object_t obj;
