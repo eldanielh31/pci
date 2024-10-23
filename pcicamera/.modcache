@@ -760,3 +760,9 @@ file 1137456 1729456280 pci_camera.so
 cap VER:5000;BLD:0;BLD_NS:__simics_project__;BUILDDATE:1728440632;MOD:pci_camera;ABI:6312;API:6;PY_VERSION:0;PY_MINOR_VERSION:0;HOSTTYPE:linux64;CLS:pci_camera;MODULE_LOAD;THREADSAFE;
 file 16848 1728440746 pci_camera_component.so
 cap VER:5000;BLD:0;BLD_NS:__simics_project__;BUILDDATE:1728440745;MOD:pci_camera_component;ABI:6312;API:6;PY_VERSION:0;PY_MINOR_VERSION:0;HOSTTYPE:linux64;CLS:pci_camera_component;COMP:pci_camera_component;MODULE_LOAD;THREADSAFE;
+dir /home/daniel/Desktop/pci/pcicamera
+dir /home/daniel/Desktop/pci/pcicamera/linux64/lib
+file 1137456 1729656589 pci_camera.so
+cap VER:5000;BLD:0;BLD_NS:__simics_project__;BUILDDATE:1728440632;MOD:pci_camera;ABI:6312;API:6;PY_VERSION:0;PY_MINOR_VERSION:0;HOSTTYPE:linux64;CLS:pci_camera;MODULE_LOAD;THREADSAFE;
+file 16848 1729656589 pci_camera_component.so
+cap VER:5000;BLD:0;BLD_NS:__simics_project__;BUILDDATE:1728440745;MOD:pci_camera_component;ABI:6312;API:6;PY_VERSION:0;PY_MINOR_VERSION:0;HOSTTYPE:linux64;CLS:pci_camera_component;COMP:pci_camera_component;MODULE_LOAD;THREADSAFE;
