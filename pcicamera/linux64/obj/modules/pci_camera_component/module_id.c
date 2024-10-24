@@ -22,14 +22,14 @@ EXPORTED const char _module_capabilities_[] =
 	"API:" BUILD_API ";"
 	"BLD:" "0" ";"
 	"BLD_NS:__simics_project__;"
-	"BUILDDATE:" "1728440745" ";"
+	"BUILDDATE:" "1729761637" ";"
 	"MOD:" "pci_camera_component" ";"
 	"CLS:pci_camera_component" ";"
 	"COMP:pci_camera_component" ";"
 	"HOSTTYPE:" "linux64" ";"
 	"THREADSAFE;"
 	EXTRA ";";
-EXPORTED const char _module_date[] = "Tue Oct  8 20:25:45 2024";
+EXPORTED const char _module_date[] = "Thu Oct 24 03:20:37 2024";
 extern void init_local(void) {}
 EXPORTED void _simics_module_init(void);
 extern void sim_iface_wrap_init(void);

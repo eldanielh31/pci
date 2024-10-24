@@ -1,1 +1,0 @@
-cmd_/home/simics/pci_capture_module.o := ld -m elf_x86_64  -z max-page-size=0x200000    -r -o /home/simics/pci_capture_module.o /home/simics/pci_driver.o ; scripts/mod/modpost /home/simics/pci_capture_module.o

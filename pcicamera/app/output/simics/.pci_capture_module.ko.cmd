@@ -1,1 +1,0 @@
-cmd_/home/simics/pci_capture_module.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds  --build-id  -o /home/simics/pci_capture_module.ko /home/simics/pci_capture_module.o /home/simics/pci_capture_module.mod.o ;  true

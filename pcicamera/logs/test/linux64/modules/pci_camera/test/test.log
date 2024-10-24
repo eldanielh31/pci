@@ -1,0 +1,77 @@
+Entering directory `/home/daniel/Desktop/pci/pcicamera/modules/pci_camera/test'
+=BEGIN s-info-status
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Intel® Simics® Simulator 6 (build 6312 linux64) © 2024 Intel Corporation
+
+pci_camera True True
+Information about obj_0000001afbb452a3 [class pci_camera]
+=========================================================
+
+    PCI bus : none
+Status of obj_0000001afbb452a3 [class pci_camera]
+=================================================
+No status available
+=END s-info-status 0.4 s
+=BEGIN s-pci_camera
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Intel® Simics® Simulator 6 (build 6312 linux64) © 2024 Intel Corporation
+
+=END s-pci_camera 0.4 s
+=BEGIN s-test-pci
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Warning: The host CPU microarchitecture is older than Haswell/Gracemont, which is the minimum that Simics supports.
+         Current processor name: AMD Ryzen 7 5800X 8-Core Processor             
+         Missing CPU features:
+             avx, avx2, fma
+Intel® Simics® Simulator 6 (build 6312 linux64) © 2024 Intel Corporation
+
+*** Python script 's-test-pci.py' failed: Python error in Py_CompileString():
+File "/home/daniel/Desktop/pci/pcicamera/modules/pci_camera/test/s-test-pci.py", line 49
+    Buffer_Size  = du.Register_LE((pci, 1, 0x0))
+    ^^^^^^^^^^^
+IndentationError: expected an indented block after 'try' statement on line 48
+*** Unexpected error message, quitting. Clear sim->stop_on_error to change this behaviour.
+*** failed (exit-status 2) ***
+=END s-test-pci 0.7 s
+Leaving directory `/home/daniel/Desktop/pci/pcicamera/modules/pci_camera/test'
